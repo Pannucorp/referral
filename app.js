@@ -3,6 +3,8 @@ const http = require('http');
 const cors = require('cors');
 var bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const { FormData } = require('formdata-node');
+const blobFrom = require('fetch-blob/from');
 const app = express();
 const PORT = 3000;
 
@@ -270,7 +272,28 @@ function sendReferralWithTelegram(data) {
     return true;
 }
 
-function sendReferralWithFacebook(data) {
+async function sendReferralWithFacebook(data) {
+    const {identifier} = data;
+
+    // TODO: Get page access token from registration
+    const PAGE_ACCESS_TOKEN = 'page_access_token'
+
+    let url = 'https://open-api.tiktok.com/share/video/upload/';
+    url += `?access_token=${PAGE_ACCESS_TOKEN}`;
+
+    const body = {
+        recipient: {
+            id: identifier
+        },
+        message: {
+            text: data
+        }
+    }
+
+    const response = await fetch(url, {method: 'post', body: JSON.stringify(body)});
+    const json = response.json();
+    // TODO: json is the result of sharing video
+
     return true;
 }
 
@@ -278,7 +301,25 @@ function sendReferralWithTwitter(data) {
     return true;
 }
 
-function sendReferralWithTiktok(data) {
+async function sendReferralWithTiktok(data) {
+    // TODO: Get page access token from registration
+    const openId = '';
+    const accessToken = '';
+
+    // Note: data should be the file path
+
+    let url = 'https://open-api.tiktok.com/share/video/upload/';
+    url += `?open_id=${openId}`;
+    url += `&access_token=${accessToken}`;
+
+    const form = new FormData();
+    const file = blobFrom(data);
+    form.set('video', file);
+
+    const response = await fetch(url, {method: 'post', body: form});
+    const json = response.json();
+    // TODO: json is the result of sending message
+
     return true;
 }
 
