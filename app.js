@@ -272,7 +272,28 @@ function sendReferralWithTelegram(data) {
     return true;
 }
 
-function sendReferralWithFacebook(data) {
+async function sendReferralWithFacebook(data) {
+    const {identifier} = data;
+
+    // TODO: Get page access token from registration
+    const PAGE_ACCESS_TOKEN = 'page_access_token'
+
+    let url = 'https://open-api.tiktok.com/share/video/upload/';
+    url += `?access_token=${PAGE_ACCESS_TOKEN}`;
+
+    const body = {
+        recipient: {
+            id: identifier
+        },
+        message: {
+            text: data
+        }
+    }
+
+    const response = await fetch(url, {method: 'post', body: JSON.stringify(body)});
+    const json = response.json();
+    // TODO: json is the result of sharing video
+
     return true;
 }
 
