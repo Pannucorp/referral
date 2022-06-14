@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = 3000;
 
+const referralRouter = require('./src/routes/referral.route');
 
 let mongooseOptions = {
     useNewUrlParser: true,
@@ -77,8 +78,8 @@ const historySchema = new mongoose.Schema({
     user_id: {
         type: Number,
     },
-    referrel_code: {
-        type: Number,
+    referral_code: {
+        type: String,
     },
     sent_at: {
         type: String,
@@ -101,6 +102,10 @@ const historySchema = new mongoose.Schema({
     receiver_earn: {
         type: String,
     },
+    earned: {
+        type: Boolean,
+        default: false
+    }
 })
 
 campaignHistory = mongoose.model('history', historySchema);
@@ -147,46 +152,14 @@ async function insertCampaign(data) {
     }
 }
 
-async function insertHistory(data) {
+async function updateCampaignById(id, data) {
     try {
-        const history = new campaignHistory({
-            ...data,
-        });
-        let newHistory = await history.save();
-        console.log("1 history document inserted");
-        return newHistory;
-    } catch (err) {
-        return err;
-    }
-}
-
-async function getAllHistory() {
-    try {
-        let existingHistories = campaignHistory.find().exec();
-        return existingHistories;
-    } catch (err) {
-        return err;
-    }
-}
-
-async function getHistoryById(id) {
-    try {
-        let existingHistory = campaignHistory.findOne({ _id: id }).exec();
-        return existingHistory;
-    } catch (err) {
-        return err;
-    }
-}
-
-
-async function updateHistoryById(id, data){
-    try {
-        const history = await campaignHistory.findOneAndUpdate(
+        const campaign = await Campaign.findOneAndUpdate(
             { _id: id },
             { $set: data },
             { new: true }
         ).exec();
-        return history;
+        return campaign;
     } catch (err) {
         return err;
     }
@@ -210,263 +183,249 @@ async function getCampaignById(id) {
     }
 }
 
-
-
-async function insertMedium(data) {
+async function insertHistory(data) {
     try {
-        const medium = new Medium({
+        const history = new campaignHistory({
             ...data,
         });
-        let newMedium = await medium.save();
-        console.log("1 medium document inserted");
-        return newMedium;
+        let newHistory = await history.save();
+        console.log("1 history document inserted");
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+async function getAllHistory() {
+    try {
+        let existingHistories = campaignHistory.find().exec();
+        return existingHistories;
     } catch (err) {
         return err;
     }
 }
 
-function getMediumByCampaignId(id) {
+async function getHistoryById(id) {
     try {
-        let existingMediums = Medium.find({ campaign_id: id }).exec();
-        return existingMediums;
+        let existingHistory = campaignHistory.findOne({ _id: id }).exec();
+        return existingHistory;
     } catch (err) {
         return err;
     }
 }
 
-function getMediumById(id) {
+async function getHistoryByCampaignId(id) {
     try {
-        let existingMedium = Medium.find({ _id: id }).exec();
-        return existingMedium;
+        let existingHistories = campaignHistory.find({ campaign_id: id }).exec();
+        return existingHistories;
     } catch (err) {
         return err;
     }
 }
 
-async function updateMediumById(id, data) {
+async function getHistoryByReferrerId(id) {
     try {
-        const medium = await Medium.findOneAndUpdate(
+        let existingHistories = campaignHistory.find({ referrer_id: id }).exec();
+        return existingHistories;
+    } catch (err) {
+        return err;
+    }
+}
+
+async function getHistoryByCampaignIdAndReferrerId(campaign_id, referrer_id) {
+    try {
+        let existingHistories = campaignHistory.find({ campaign_id: campaign_id, referrer_id: referrer_id }).exec();
+        return existingHistories;
+    } catch (err) {
+        return err;
+    }
+}
+
+async function getHistoryByCampaignIdAndMediumType(id, mediumType) {
+    try {
+        let existingHistories = campaignHistory.find({ campaign_id: id, medium_type: mediumType }).exec();
+        return existingHistories;
+    } catch (err) {
+        return err;
+    }
+}
+
+async function updateHistoryById(id, data) {
+    try {
+        const history = await campaignHistory.findOneAndUpdate(
             { _id: id },
             { $set: data },
             { new: true }
         ).exec();
-        return medium;
+        return history;
     } catch (err) {
         return err;
     }
 }
 
-// function updateMedium(data) {
-//     let myquery = {
-//         campaign_id: data['campaign_id'],
-//         medium_type: data['medium_type']
-//     };
-//     let newvalues = { $set: { sent: data['sent'], clicked: data['clicked'], signed: data['signed'] } };
-//     dbo.collection("mediums").updateOne(myquery, newvalues, function (err, res) {
-//         if (err) {
-//             res.send(500).json(err);
-//             throw err;
-//         }
-//         console.log("1 review updated");
-//     });
-// }
-
-
-let order = [
-    "whatsapp",
-    "telegram",
-    "facebook",
-    "twitter",
-    "tiktok"
-];
-
-function referralWithWhatsapp(user, content, receiverList) {
-    if (reciverList[0] == "all") {
-        console.log("send a message to all contacts by whatsapp");
-    } else {
-        for (let i = 0; i < receiverList.length; i++) {
-            console.log("send a direct message to " + receiverList[i] + " by whatsapp");
-        }
-    }
+function sendReferralWithWhatsapp(data) {
+    return true;
 }
 
-function referralWithTelegram(user, content) {
-    if (reciverList[0] == "all") {
-        console.log("send a message to all contacts by telegram");
-    } else {
-        for (let i = 0; i < receiverList.length; i++) {
-            console.log("send a direct message to " + receiverList[i] + " by telegram");
-        }
-    }
+function sendReferralWithTelegram(data) {
+    return true;
 }
 
-function referralWithFacebook(user, content) {
-    if (reciverList[0] == "all") {
-        console.log("send a message to all contacts by facebook");
-    } else {
-        for (let i = 0; i < receiverList.length; i++) {
-            console.log("send a direct message to " + receiverList[i] + " by facebook");
-        }
-    }
+function sendReferralWithFacebook(data) {
+    return true;
 }
 
-function referralWithTwitter(user, content) {
-    if (reciverList[0] == "all") {
-        console.log("send a message to all contacts by twitter");
-    } else {
-        for (let i = 0; i < receiverList.length; i++) {
-            console.log("send a direct message to " + receiverList[i] + " by twitter");
-        }
-    }
+function sendReferralWithTwitter(data) {
+    return true;
 }
 
-function referralWithTiktok(user, content) {
-    if (reciverList[0] == "all") {
-        console.log("send a message to all contacts by tiktok");
-    } else {
-        for (let i = 0; i < receiverList.length; i++) {
-            console.log("send a direct message to " + receiverList[i] + " by tiktok");
-        }
-    }
+function sendReferralWithTiktok(data) {
+    return true;
 }
 
-function send(user, content, i, receiverList) {
-    switch (i) {
-        case 0: {
-            return referralWithWhatsapp(user, content, receiverList);
+function getContactsByIdWithWhatsapp(referrer_id) {
+    //get info from registeration module with referrer_id
+    return [];
+}
+
+function getContactsByIdWithTelegram(referrer_id) {
+    return [];
+}
+
+function getContactsByIdWithFacebook(referrer_id) {
+    return [];
+}
+
+function getContactsByIdWithTwitter(referrer_id) {
+    return [];
+}
+
+function getContactsByIdWithTiktok(referrer_id) {
+    return [];
+}
+
+function sendMessage(data) {
+    switch (data['medium_type']) {
+        case 'whatsapp': {
+            return sendReferralWithWhatsapp(data);
             break;
         };
-        case 1: {
-            return referralWithTelegram(user, content, receiverList);
+        case 'telegram': {
+            return sendReferralWithTelegram(data);
             break;
         };
-        case 2: {
-            return referralWithFacebook(user, content, receiverList);
+        case 'facebook': {
+            return sendReferralWithFacebook(data);
             break;
         };
-        case 3: {
-            return referralWithTwitter(user, content, receiverList);
+        case 'twitter': {
+            return sendReferralWithTwitter(data);
             break;
         };
-        case 4: {
-            return referralWithTiktok(user, content, receiverList);
+        case 'tiktok': {
+            return sendReferralWithTiktok(data);
             break;
         };
         default: {
-            return 0;
+            return false;
         }
     }
 }
 
-app.post('/referral/getContacts', (req, res) => {
+function getContacts(id, medium_type) {
+    switch (medium_type) {
+        case 'whatsapp': {
+            return getContactsByIdWithWhatsapp(id);
+            break;
+        };
+        case 'telegram': {
+            return getContactsByIdWithTelegram(id);
+            break;
+        };
+        case 'facebook': {
+            return getContactsByIdWithFacebook(id);
+            break;
+        };
+        case 'twitter': {
+            return getContactsByIdWithTwitter(id);
+            break;
+        };
+        case 'tiktok': {
+            return getContactsByIdWithTiktok(id);
+            break;
+        };
+        default: {
+            return false;
+        }
+    }
+}
 
+/*
+campaign_id
+medium_type
+contact_list
+referrer_id
+referral_code
+referrer_earn
+receiver_earn
+note
+*/
+
+app.post('/referral/send', async (req, res) => {
+    if (req.body && req.body.campaign_id && req.body.medium_type && req.body.contact_list && req.body.referrer_id && req.body.referral_code && req.body.referrer_earn && req.body.receiver_earn && req.body.note) {
+        //get user info from registeration module.
+        let rlt = [];
+        for (let i = 0; i < req.body.contact_list.length; i++) {
+            let data = {
+                campaign_id: req.body.campaign_id,
+                medium_type: req.body.medium_type,
+                identifier: req.body.contact_list[i],
+                referrer_id: req.body.referrer_id,
+                referral_code: req.body.referral_code,
+                referrer_earn: req.body.referrer_earn,
+                receiver_earn: req.body.receiver_earn,
+                note: req.body.note
+            }
+            if (await sendMessage(data)) {
+                rlt[i] = insertHistory(data);
+            } else {
+                rlt[i] = false;
+            }
+        }
+        res.status(200).send(rlt);
+    } else {
+        res.status(400).send({
+            errors: ['Missing required fields: user_id, message'],
+        });
+    }
+    res.status(200);
+    res.send("Welcome to root URL of Server");
+});
+
+app.post('/referral/getContacts', async (req, res) => {
+    try {
+        if (req.body && req.body.medium_type && req.body.referrer_id) {
+            res.status(200).send(await getContacts(req.body.referrer_id, req.params.medium_type));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+    } catch (err) {
+        res.status(500).send(err);
+    }
 })
-
-app.post('/referral/send/all', (req, res) => {
-    if (req.body && req.body.user_id && req.body.message) {
-        //get user info from registeration module.
-        let user = {
-            'name': 'Jason Lee',
-            'phone': '+14158004073',
-            'email': 'jason.l@pannucorp.com',
-            'telegram': '@SatoshiBES'
-        }
-        let content = "This message was sent by" + user['name'] + ".";
-        let data = {
-            content: req.body.message,
-            sent_at: new Date(),
-            created_by: req.body.user_id,
-        }
-        insertCampaign(data)
-
-        let receiverList = ['all'];
-        for (let i = 0; i < order.length; i++) {
-            if (user[order[i]] && user[order[i]] != '') {
-                let rlt = send(user, content, i, rxeceiverList);
-            }
-        }
-    } else {
-        res.status(400).send({
-            errors: ['Missing required fields: user_id, message'],
-        });
-    }
-    res.status(200);
-    res.send("Welcome to root URL of Server");
-});
-
-app.post('/referral/send/direct', (req, res) => {
-    if (req.body && req.body.user_id && req.body.message && req.body.receiverList) {
-        //get user info from registeration module.
-        let user = {
-            'name': 'Jason Lee',
-            'phone': '+14158004073',
-            'email': 'jason.l@pannucorp.com',
-            'telegram': '@SatoshiBES'
-        }
-        let content = "This message was sent by" + user['name'] + ".";
-        for (let i = 0; i < order.length; i++) {
-            if (user[order[i]] && user[order[i]] != '') {
-                send(user, content, i);
-            }
-        }
-    } else {
-        res.status(400).send({
-            errors: ['Missing required fields: user_id, message'],
-        });
-    }
-    res.status(200);
-    res.send("Welcome to root URL of Server");
-});
-
-app.get('/referral/getMediumByCampaignId/:campaignId', async (req, res) => {
-    try {
-        if (req.params.campaignId) {
-            res.status(200).send(await getMediumByCampaignId(req.params.campaignId));
-        } else {
-            res.status(400).send({
-                'content': 'contents are missing'
-            })
-        }
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
-
-app.get('/referral/getMediumById/:mediumId', async (req, res) => {
-    try {
-        if (req.params.mediumId) {
-            res.status(200).send(await getMediumById(req.params.mediumId));
-        } else {
-            res.status(400).send({
-                'content': 'contents are missing'
-            })
-        }
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
-
-app.put('/referral/updateMediumById/:mediumId', async (req, res) => {
-    try {
-        if (req.params.mediumId && req.body) {
-            res.status(200).send(await updateMediumById(req.params.mediumId, req.body));
-        } else {
-            res.status(400).send({
-                'content': 'contents are missing'
-            })
-        }
-    } catch (err) {
-        res.status(500).send(err);
-    }
-});
 
 app.post('/referral/createCampaign', async (req, res) => {
     try {
-        if (req.body && req.body.content && req.body.created_by) {
+        if (req.body && req.body.content && req.body.created_by && req.body.total_price && req.body.referrer_price && req.body.day) {
             let data = {
                 content: req.body.content,
                 created_at: new Date().toISOString(),
-                created_by: req.body.created_by
+                created_by: req.body.created_by,
+                total_price: req.body.total_price,
+                referrer_price: req.body.referrer_price,
+                day: req.body.day
             }
             res.status(200).send(await insertCampaign(data));
         } else {
@@ -479,6 +438,20 @@ app.post('/referral/createCampaign', async (req, res) => {
         res.status(400).send({
             'err': err
         })
+    }
+});
+
+app.put('/referral/updateCampaignById/:campaignId', async (req, res) => {
+    try {
+        if (req.params.campaignId && req.body) {
+            res.status(200).send(await updateCampaignById(req.params.campaignId, req.body));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+    } catch (err) {
+        res.status(500).send(err);
     }
 });
 
@@ -505,7 +478,130 @@ app.get('/referral/getAllCampaign', async (req, res) => {
     }
 });
 
+app.post('/referral/createHistory', async (req, res) => {
+    try {
+        if (req.body && req.body.campaign_id && req.body.medium_type && req.body.identifier && req.body.referrer_id) {
+            res.status(200).send(await insertHistory(req.body));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+    }
+    catch (err) {
+        res.status(400).send({
+            'err': err
+        })
+    }
+});
 
+app.get('/referral/getAllHistory', async (req, res) => {
+    try {
+        res.status(200).send(await getAllHistory());
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.get('/referral/getHistoryById/:historyId', async (req, res) => {
+    try {
+        if (req.params.historyId) {
+            res.status(200).send(await getHistoryById(req.params.historyId));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.get('/referral/getHistoryByCampaignId/:campaignId', async (req, res) => {
+    try {
+        if (req.params.campaignId) {
+            res.status(200).send(await getHistoryByCampaignId(req.params.campaignId));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.get('/referral/getHistoryByReferrerId/:referrerId', async (req, res) => {
+    try {
+        if (req.params.referrerId) {
+            res.status(200).send(await getHistoryByReferrerId(req.params.referrerId));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.post('/referral/getHistoryByCampaignIdAndReferrerId', async (req, res) => {
+    try {
+        if (req.body && req.body.campaign_id && req.body.referrer_id) {
+            res.status(200).send(await getHistoryByCampaignIdAndReferrerId(req.body.campaign_id, req.body.referrer_id));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.post('/referral/getHistoryByCampaignIdAndMediumType', async (req, res) => {
+    try {
+        if (req.body && req.body.campaign_id && req.body.medium_type) {
+            res.status(200).send(await getHistoryByCampaignIdAndMediumType(req.body.campaign_id, req.body.medium_type));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.put('/referral/updateHistoryById/:historyId', async (req, res) => {
+    try {
+        if (req.params.historyId && req.body) {
+            res.status(200).send(await updateHistoryById(req.params.historyId, req.body));
+        } else {
+            res.status(400).send({
+                'content': 'contents are missing'
+            })
+        }
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
+app.use('/referral', referralRouter);
+
+/* Error handler middleware */
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    console.error(err.message, err.stack);
+    res.status(statusCode).json({ 'message': err.message });
+
+    return;
+});
 
 server = http.createServer(app);
 server.listen(PORT, () => {
